@@ -11,8 +11,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
 
-
-    GLFWwindow *window = glfwCreateWindow(512, 512, "Hellow Triangle 4.1", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(512, 512, "Outlined Triangle 4.1", NULL, NULL);
     glfwMakeContextCurrent(window);
     
     glewExperimental = true;
@@ -73,16 +72,30 @@ int main()
 
     glGenBuffers(NUM_BUFFERS, vbo);
 
+    // Define vertices for the three lines that make up the triangle outline
     const float positions[] = {
-        -0.5, -0.5,
-        0.0, 0.5,
-        0.5, -0.5
+        // First line
+        -0.5f, -0.5f,
+        0.0f, 0.5f,
+        // Second line
+        0.0f, 0.5f,
+        0.5f, -0.5f,
+        // Third line
+        0.5f, -0.5f,
+        -0.5f, -0.5f
     };
 
+    // Colors for each vertex (repeated for each endpoint of the lines)
     const float colors[] = {
+        // First line (red)
         1, 0, 0, 1,
         0, 1, 0, 1,
-        0, 0, 1, 1
+        // Second line (green)
+        0, 1, 0, 1,
+        0, 0, 1, 1,
+        // Third line (blue)
+        0, 0, 1, 1,
+        1, 0, 0, 1
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[POSITION]);
@@ -95,9 +108,10 @@ int main()
     glEnableVertexAttribArray(COLOR_ATTRIB_LOC);
     glVertexAttribPointer(COLOR_ATTRIB_LOC, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0);
 
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    // Set line width for the outline
+    glLineWidth(3.0f);
     
-    glClearColor(0.02,0.02,0.02,1.0);
+    glClearColor(0.02, 0.02, 0.02, 1.0);
     while(!glfwWindowShouldClose(window))
     {
         glfwWaitEvents();
@@ -105,7 +119,8 @@ int main()
 
         glUseProgram(shader_program);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // Draw lines instead of triangles
+        glDrawArrays(GL_LINES, 0, 6);
 
         glfwSwapBuffers(window);
     }
