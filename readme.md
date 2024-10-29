@@ -1,29 +1,28 @@
-    This Program CPP with OpenGL and GLFW, and the main part of the code is the loop that draws the triangles. 
+    This Program CPP with OpenGL and GLFW, and the main part of the code is the loop that draws the triangles. based on tutorial https://www.youtube.com/watch?v=iyDJ_1lElms
+    
+    Key changes made to create the outlined triangle:
+    - Changed the rendering mode from GL_TRIANGLES to GL_LINES
+    - Modified the vertex data to define three separate lines instead of a filled triangle
+    - Added glLineWidth(3.0f) to make the lines more visible
+    - Updated the vertex positions and colors to create a continuous outline
+    - Each line segment maintains the gradient effect between its endpoints
     
     The  positions  and  colors  vectors store all the vertices and colors for all the triangles. 
+
+    Key changes made to create the layered effect:
+    - Added multiple concentric triangles (5 by default)
+    - Each inner triangle is scaled down by a factor of 0.15
+    - Added color intensity variation - inner triangles have slightly lower color intensity
+    - Used vectors to store the vertex and color data for all triangles
+    - Enabled alpha blending for better visual effect
+    - Adjusted line width to 2.0f for clearer visibility of all layers
+    - Each triangle maintains the RGB gradient effect but with decreasing intensity
     
     The number of triangles drawn is controlled by the  NUM_TRIANGLES  constant. 
     
     The  scale  variable is used to calculate the size of each triangle. The  intensity  variable is used to calculate the intensity of the color based on the layer. 
 
     The  layerColors  array stores the colors for each triangle. The colors are interpolated from red to green, green to blue, and blue to red.
-
-    The geometry shader code for the layered triangle effect is as follows: 
-    #version 410
-    layout(triangles) in;
-    layout(triangle_strip, max_vertices = 3) out;
-    in vec4 color[];
-    out vec4 color0;
-    void main()
-    {
-        for(int i = 0; i < gl_in.length(); i++)
-        {
-            gl_Position = gl_in[i].gl_Position;
-            color0 = color[i];
-            EmitVertex();
-        }
-        EndPrimitive();
-    }
  
     The geometry shader takes a single triangle as input and generates three triangles as output. It copies the input triangle’s vertices and colors to the output triangles. 
     
@@ -45,3 +44,15 @@
     
     Conclusion 
     In this tutorial, you learned how to create a simple OpenGL program to draw layered triangles using the modern OpenGL 4.1 API. You also learned how to set up a GLFW window and GLEW library to initialize the OpenGL context.
+
+    Compile and Run
+    setup your environtment to install
+    - for using cpp, `sudo apt-get install clang++`
+    - for using opengl es, `sudo apt-get install libglew-dev`
+    - for using glew, `sudo apt-get install libglfw3 libglfw3-dev`
+    - for using wayland, `sudo apt-get install libwayland-dev libgles2-mesa-dev libegl1-mesa-dev wayland-protocols`
+
+    run command based on list of command in Makefile
+    - compile, `make hello_triangle_(*type of API, Native API with Wayland EGL or Libary API with GLFW)`
+    - run, `./hello_triangle_(*type)`
+    - clean, `make clean`
