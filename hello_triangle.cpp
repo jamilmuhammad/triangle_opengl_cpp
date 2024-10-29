@@ -1,6 +1,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <vector>
 
 int main()
 {
@@ -11,7 +12,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
 
-    GLFWwindow *window = glfwCreateWindow(512, 512, "Outlined Triangle 4.1", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(512, 512, "Layered Triangles 4.1", NULL, NULL);
     glfwMakeContextCurrent(window);
     
     glewExperimental = true;
@@ -21,7 +22,6 @@ int main()
     unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
     unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
 
-    // vertex source
     const char* vert_source = ""
     "#version 410\n"
     "in vec2 position;\n"
@@ -33,7 +33,6 @@ int main()
         "color0 = color;\n"
     "}\n";
 
-    // fragment source
     const char* frag_source = ""
     "#version 410\n"
     "out vec4 frag_color;\n"
@@ -72,44 +71,65 @@ int main()
 
     glGenBuffers(NUM_BUFFERS, vbo);
 
-    // Define vertices for the three lines that make up the triangle outline
-    const float positions[] = {
-        // First line
-        -0.5f, -0.5f,
-        0.0f, 0.5f,
-        // Second line
-        0.0f, 0.5f,
-        0.5f, -0.5f,
-        // Third line
-        0.5f, -0.5f,
-        -0.5f, -0.5f
-    };
-
-    // Colors for each vertex (repeated for each endpoint of the lines)
-    const float colors[] = {
-        // First line (red)
-        1, 0, 0, 1,
-        0, 1, 0, 1,
-        // Second line (green)
-        0, 1, 0, 1,
-        0, 0, 1, 1,
-        // Third line (blue)
-        0, 0, 1, 1,
-        1, 0, 0, 1
-    };
+    std::vector<float> positions;
+    std::vector<float> colors;
+    
+    const int NUM_TRIANGLES = 5;  // total layered triangles
+    const float SCALE_FACTOR = 0.15f;  // span each inner triangle shrinks
+    
+    for(int i = 0; i < NUM_TRIANGLES; i++) {
+        float scale = 1.0f - (i * SCALE_FACTOR);
+        
+        // Base triangle vertices
+        float vertices[] = {
+            // First line
+            -0.5f * scale, -0.5f * scale,
+            0.0f * scale, 0.5f * scale,
+            // Second line
+            0.0f * scale, 0.5f * scale,
+            0.5f * scale, -0.5f * scale,
+            // Third line
+            0.5f * scale, -0.5f * scale,
+            -0.5f * scale, -0.5f * scale
+        };
+        
+        // Add vertices to positions vector
+        positions.insert(positions.end(), std::begin(vertices), std::end(vertices));
+        
+        // Calculate colors with varying intensity based on layer
+        float intensity = 1.0f - (i * 0.15f);  // Decrease intensity for inner triangles
+        float layerColors[] = {
+            // First line (red to green)
+            1.0f * intensity, 0.0f, 0.0f, 1.0f,
+            0.0f, 1.0f * intensity, 0.0f, 1.0f,
+            // Second line (green to blue)
+            0.0f, 1.0f * intensity, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f * intensity, 1.0f,
+            // Third line (blue to red)
+            0.0f, 0.0f, 1.0f * intensity, 1.0f,
+            1.0f * intensity, 0.0f, 0.0f, 1.0f
+        };
+        
+        // Add colors to colors vector
+        colors.insert(colors.end(), std::begin(layerColors), std::end(layerColors));
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[POSITION]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(POSITION_ATTRIB_LOC);
     glVertexAttribPointer(POSITION_ATTRIB_LOC, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[COLOR]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(COLOR_ATTRIB_LOC);
     glVertexAttribPointer(COLOR_ATTRIB_LOC, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0);
 
     // Set line width for the outline
-    glLineWidth(3.0f);
+    glLineWidth(2.0f);
+    
+    // Enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     glClearColor(0.02, 0.02, 0.02, 1.0);
     while(!glfwWindowShouldClose(window))
@@ -119,8 +139,8 @@ int main()
 
         glUseProgram(shader_program);
         glBindVertexArray(vao);
-        // Draw lines instead of triangles
-        glDrawArrays(GL_LINES, 0, 6);
+        // Draw all triangles
+        glDrawArrays(GL_LINES, 0, positions.size() / 2);
 
         glfwSwapBuffers(window);
     }
