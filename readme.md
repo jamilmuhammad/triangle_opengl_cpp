@@ -41,6 +41,22 @@
     ./hello_triangle
     
     The output should be a window with five layered triangles. Each triangle is smaller than the previous one, and the color intensity decreases from the outer triangles to the inner triangles. 
+
+    Key Changed:
+    - Replaced GLFW with native Wayland and EGL initialization
+    - Created a WaylandEGLWindow class to manage Wayland and EGL setup/teardown
+    - Updated shader version to "#version 300 es" for OpenGL ES 3.0
+    - Added precision qualifier in fragment shader (required for GLES)
+    - Removed GLEW dependency as it's not needed for GLES
+    - Added proper error handling with exceptions
+    - Added basic event processing with Wayland
+    - Added frame timing with usleep for ~60 FPS
+    - Added #include <string.h> for strcmp
+    - Moved the static wl_registry_listener definition outside the class
+    - Added proper initialization in the constructor using an initialization list
+    - Marked unused parameters with (void) to suppress warnings
+    - Added null checks in the destructor
+    - Fixed the listener structure initialization using designated initializers
     
     Conclusion 
     In this tutorial, you learned how to create a simple OpenGL program to draw layered triangles using the modern OpenGL 4.1 API. You also learned how to set up a GLFW window and GLEW library to initialize the OpenGL context.
@@ -55,4 +71,4 @@
     run command based on list of command in Makefile
     - compile, `make hello_triangle_(*type of API, Native API with Wayland EGL or Libary API with GLFW)`
     - run, `./hello_triangle_(*type)`
-    - clean, `make clean`
+    - clean, `make clean_(*type)`
